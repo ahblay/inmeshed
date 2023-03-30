@@ -216,11 +216,12 @@ function checkWord() {
         $("#found-words").empty();
         renderGuesses();
         updateScore(guess);
+        $("#guess-input").val('');
+        return true
     } else {
         $("#guess-container").effect("shake");
+        return false
     }
-    $("#guess-input").val('');
-    return
 }
 
 /**
@@ -321,10 +322,11 @@ $("#guess-input").keydown(function(event) {
     const t = event.target;
     // Handling for when user hits enter.
     if (event.key == "Enter") {
-        $(".highlighted").removeClass("highlighted");
-        indexForTypedLetters = 0;
-        enteredWord = [];
-        checkWord();
+        if (checkWord()) {
+            $(".highlighted").removeClass("highlighted");
+            indexForTypedLetters = 0;
+            enteredWord = [];
+        }
     // If backspace of delete, check if deleted letter is the last occurrence of that letter in the guessed word.
     // If so, remove 'highlighted' class from corresponding letter.
     } else if (event.keyCode === 8) { // for backspace key
