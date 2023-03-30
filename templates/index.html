@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+
+{% block data %}
+{% endblock %}
+
+{% block title %}
+InMESHED
+{% endblock %}
+
+{% block stylesheets %}
+<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.2/katex.min.css">
+{% endblock %}
+
+{% block ptitle %}InMeshed{% endblock %}
+
+{% block content %}
+<div class="big-grid-container">
+  <div class="desc">
+    <div id="guess-container">
+      <input id="guess-input" type="text" placeholder="Enter guess" required="required">
+    </div>
+    <div id="letters-container" class="desc grid-container">
+      {% for letter in results[0] %}
+      <div class="letter">{{ letter }}</div>
+      {% endfor %}
+    </div>
+    <!--
+    <button onclick="checkWord()">Enter</button>
+
+    <button onclick="">New letters</button>
+    -->
+  </div>
+  <div class="desc">
+    <ul id="progress-bar" class="highlight-active">
+      <li id="one" class="active" data-threshold=""></li>
+      <li id="two" data-threshold=""></li>
+      <li id="three" data-threshold=""></li>
+      <li id="four" data-threshold=""></li>
+      <li id="five" data-threshold=""></li>
+      <li id="six" data-threshold=""></li>
+      <li id="seven" data-threshold=""></li>
+      <li id="eight" data-threshold=""></li>
+    </ul>
+    <ul id="found-words">
+
+    </ul>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.2/katex.min.js" type="text/javascript"></script>
+<script type="text/javascript">
+  var solutions = {{ results[1]|tojson }}
+  var letters = {{ results[0]|tojson }}
+</script>
+<script src="/static/index.js" type="text/javascript"></script>
+{% endblock %}

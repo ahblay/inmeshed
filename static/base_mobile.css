@@ -1,0 +1,32 @@
+.header {
+    width: 0;
+    height: 0;
+    border-left: 200px solid transparent;
+    border-right: 200px solid transparent;
+    border-bottom: 20px solid black;
+    display: inline-block;
+}
+
+.footer {
+    width: 0;
+    height: 0;
+    border-left: 200px solid transparent;
+    border-right: 200px solid transparent;
+    border-top: 20px solid black;
+    display: inline-block;
+}
+
+.title {
+    Font-Family: 'Playfair Display', Serif;
+    font-size: 50px;
+    font-weight: bold;
+    padding-top: 20px;
+    color: #ffda6a;
+    text-align: center;
+}
+
+.desc {
+    Font-Family: 'Source Sans Pro', Sans-Serif;
+    font-size: 15px;
+    color: white;
+}
