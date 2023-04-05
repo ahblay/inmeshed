@@ -5,6 +5,7 @@ from datetime import datetime
 import os
 from flask_sqlalchemy import SQLAlchemy
 from dotenv import load_dotenv
+import pandas as pd
 
 # BASIC FUNCTIONALITY
 
@@ -68,29 +69,29 @@ def index():
     print(query)
 
     # bypass database for testing
-    letters, solution = generate(used, 3)
-    solution_list = [s for s in solution.keys() if solution[s] != 0]
+    # letters, solution = generate(used, 3)
+    # solution_list = [s for s in solution.keys() if solution[s] != 0]
 
-    '''
     if query:
         letters = query[0].letters
         print(letters)
-        solution_list = get_solutions_list(letters)
+        common_solution_list = get_common_solutions_list(letters)
+        solution_df = get_solutions_df(letters)
+        solution = pd.Series(solution_df['count'].values, index=solution_df['word']).to_dict()
     else:
         letters, solution = generate(used, 3)
-        solution_list = list(solution.keys())
+        common_solution_list = [s for s in solution.keys() if solution[s] != 0]
         db_letters = ''.join(letters)
         db_entry = LetterSets(letters=db_letters,
                               date=today)
         db.session.add(db_entry)
         db.session.commit()
-    '''
 
     # generate a suitable letter triple and pass that triple as well as the solution set to the front end
     # and render the homepage
     letters_upper = [x.upper() for x in letters]
-    print(solution_list)
-    return render_template('index.html', results=[letters_upper, solution_list, solution])
+    print(common_solution_list)
+    return render_template('index.html', results=[letters_upper, common_solution_list, solution])
 
 if __name__ == '__main__':
     app.run(debug=True)

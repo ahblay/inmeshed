@@ -63,10 +63,13 @@
 }
 
 input {
+    border-style: solid;
+    border-left: none;
+    border-right: none;
+    border-top: none;
     height: 40px;
     width: 85%;
-    border: 1px solid #ffda6a;
-    border-radius: 10px;
+    border-bottom: 1px solid gray;
     background-color: #1c2125;
     font-size: 20px;
     color: white;
@@ -78,8 +81,7 @@ input {
 
 input:focus {
     outline: none !important;
-    border: 1px solid #ffda6a;
-    box-shadow: 0 0 2px #ffda6a;
+    border-bottom: 1px solid #ffda6a;
   }
 
 #guess-input:valid {
@@ -197,4 +199,46 @@ input:focus {
 
 #letters-container {
     justify-items: center;
+}
+
+#points-message {
+    border: 1px solid #f7d65c;
+    border-radius: 2px;
+    padding: 8px;
+    color: white;
+    font-size: 14px;
+}
+
+#points {
+    margin-left: 5px;
+    font-size: 20px;
+    color: #f7d65c;
+}
+
+#points-bug {
+    visibility: hidden;
+    padding-bottom: 29px;
+    text-align: center;
+}
+
+.animation {
+    animation: 1.2s anim-score ease-out 1;
+}
+
+@keyframes anim-score {
+    0% {
+        opacity: 0;
+        transform: translateY(60%);
+    }
+    20% {
+        opacity: 0;
+    }
+    50% {
+        opacity: 0.6;
+        transform: translateY(10%);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(10%);
+    }
 }

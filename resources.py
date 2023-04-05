@@ -40,12 +40,14 @@ def get_solutions_df(letters):
     return solutions
 
 
-def get_solutions_list(letters):
+def get_common_solutions_list(letters):
     letters = ''.join(letters)
     df = pd.read_csv('tv_freq_list', sep='\t', header=0)
     df = df.drop('amount', 1)
     solutions = df[df['word'].apply(lambda x: is_subsequence(letters, x))]
-    return list(solutions['word'].values)
+    solutions = pd.Series(solutions['count'].values, index=solutions['word']).to_dict()
+    common_solution_list = [s for s in solutions.keys() if solutions[s] != 0]
+    return common_solution_list
 
 
 def generate(used, n=3):

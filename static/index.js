@@ -216,6 +216,15 @@ function updateScore(guess) {
     return
 }
 
+function handleAnimation() {
+    $("#points-bug").css("visibility", "visible");
+    $("#points-bug").addClass("animation");
+    setTimeout(function() {
+        $("#points-bug").removeClass("animation");
+        $("#points-bug").css("visibility", "hidden");
+    }, 1000);
+}
+
 /**
 * Checks if guess is in solutions and hasn't been guessed yet. If so, appends guess to guesses, updates current score,
 * and saves resulting values to session storage.
@@ -226,6 +235,7 @@ function checkWord() {
     var solutionsFreq = getSolutionsFrequencies();
     var guesses = getGuesses();
     if (guess in solutionsFreq && !(guesses.includes(guess))) {
+        handleAnimation();
         guesses.push(guess);
         setGuesses(guesses);
         // clear #found-words
