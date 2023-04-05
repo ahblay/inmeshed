@@ -1,5 +1,6 @@
 import random
 import string
+import pandas as pd
 
 
 def get_letters(used, n=3):
@@ -8,6 +9,7 @@ def get_letters(used, n=3):
         if letters not in used:
             break
     return letters
+
 
 def is_subsequence(x, sequence):
     try:
@@ -19,6 +21,7 @@ def is_subsequence(x, sequence):
     except StopIteration:
         return False
 
+
 def get_solutions(letters):
     letters = ''.join(letters)
     solutions = []
@@ -28,13 +31,30 @@ def get_solutions(letters):
                 solutions.append(line.rstrip())
     return solutions
 
+
+def get_solutions_df(letters):
+    letters = ''.join(letters)
+    df = pd.read_csv('tv_freq_list', sep='\t', header=0)
+    df = df.drop('amount', 1)
+    solutions = df[df['word'].apply(lambda x: is_subsequence(letters, x))]
+    return solutions
+
+
+def get_solutions_list(letters):
+    letters = ''.join(letters)
+    df = pd.read_csv('tv_freq_list', sep='\t', header=0)
+    df = df.drop('amount', 1)
+    solutions = df[df['word'].apply(lambda x: is_subsequence(letters, x))]
+    return list(solutions['word'].values)
+
+
 def generate(used, n=3):
     while True:
         l = get_letters(used, n)
-        sol = get_solutions(l)
-        if 20 < len(sol) < 100:
+        sol = get_solutions_df(l)
+        if 7 < len(sol[sol['count'] != 0]) < 50:
             break
-    return l, sol
+    return l, pd.Series(sol['count'].values, index=sol['word']).to_dict()
 
 #used = []
 #l, sol = generate(used)

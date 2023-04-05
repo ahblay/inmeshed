@@ -180,6 +180,7 @@ input:focus {
     padding-bottom: 3px;
     border-bottom: 1px solid gray;
     font-size: 18px;
+    min-width: 80px;
 }
 
 #found-words .info {

@@ -41,6 +41,22 @@ function sortGuesses(guesses) {
 /**
 * Loads in solution set from server and saves to session storage. Calculates goal score and saves to session storage.
 */
+function setSolutionsFrequencies() {
+    localStorage.setItem('solutionsFrequencies', JSON.stringify(solutionsFreq));
+    return
+}
+
+/**
+* Retrieves session storage value for 'solutions'.
+*/
+function getSolutionsFrequencies() {
+    var solutionsFreq = JSON.parse(localStorage.getItem('solutionsFrequencies'));
+    return solutionsFreq
+}
+
+/**
+* Loads in solution set from server and saves to session storage. Calculates goal score and saves to session storage.
+*/
 function setSolutions() {
     localStorage.setItem('solutions', JSON.stringify(solutions));
     return
@@ -155,7 +171,6 @@ function getLetters() {
 */
 function setLetters() {
     var oldLetters = getLetters();
-    console.log(oldLetters)
     if (letters.toString() != oldLetters.toString()) {
         resetLocalStorageData();
     }
@@ -206,10 +221,11 @@ function updateScore(guess) {
 * and saves resulting values to session storage.
 */
 function checkWord() {
-    var guess = $("#guess-input").val();
-    var solutions = getSolutions();
+    var guess = $("#guess-input").val().toLowerCase();
+    console.log(guess)
+    var solutionsFreq = getSolutionsFrequencies();
     var guesses = getGuesses();
-    if (solutions.includes(guess) && !(guesses.includes(guess))) {
+    if (guess in solutionsFreq && !(guesses.includes(guess))) {
         guesses.push(guess);
         setGuesses(guesses);
         // clear #found-words
@@ -260,6 +276,16 @@ function mergeLabels(sortedList, dict) {
         }
         result.push([wordLength, quantity])
     }
+    // handling words that are longer than the requirements
+    while (idx < sortedList.length) {
+        console.log(sortedList[idx])
+        result.push(sortedList[idx]);
+        if ((idx + 1) == sortedList.length || sortedList[idx].length < sortedList[idx + 1].length) {
+            result.push([sortedList[idx].length, 0])
+        }
+        idx++;
+    }
+
     return result
 }
 
@@ -270,8 +296,11 @@ function renderGuesses() {
     var currentScore = getCurrentScore();
     var guesses = getGuesses();
     var enumeratedGuesses = enumerateByLength(guesses);
+    console.log(enumeratedGuesses)
     var enumeratedSolutions = getEnumeratedSolutions();
+    console.log(enumeratedSolutions)
     var merged = mergeLabels(guesses, enumeratedSolutions);
+    console.log(merged)
     var wordLengthCounter = 0;
     for (i = 0; i < merged.length; i++) {
         if (typeof merged[i] == "string") {
@@ -304,69 +333,86 @@ function renderGuesses() {
 */
 function loadGameInfo(difficulty = 1) {
     setSolutions();
+    setSolutionsFrequencies();
     setEnumeratedSolutions(difficulty);
     setGoalScore(getEnumeratedSolutions());
     assignThresholds();
     setLetters();
     renderGuesses();
+    letterHighlighter();
     return
 }
 
-/**
-* Code for highlighting letters on user input.
-*/
-var indexForTypedLetters = 0;
-var enteredWord = [];
-$("#guess-input").keydown(function(event) {
-    var letters = getLetters();
-    const t = event.target;
+function handleWordInput(event) {
+    const updatedInputText = $('#guess-input').val().replace(/[^A-Za-z]+/g, "").toUpperCase();
+    $('#guess-input').val(updatedInputText);
+}
+
+function letterHighlighter() {
+    const word = $('#guess-input').val();
+
+    let pattern = '';
+    let stopMatching = false;
+
+    $('#letters-container').children().each(function(idx) {
+        const letterValue = $(this).text();
+
+        if (!stopMatching) {
+            pattern += `.*${letterValue}`;
+
+            if (new RegExp(pattern).test(word)) {
+                $(this).addClass('highlighted');
+            } else {
+                stopMatching = true;
+            }
+        }
+
+        if (stopMatching) {
+            $(this).removeClass('highlighted');
+        }
+    });
+}
+
+function handleWordSubmission(event) {
+    if (checkWord()) {
+        $(".highlighted").removeClass("highlighted");
+    }
+}
+
+$("#guess-input").keyup(function(event) {
     // Handling for when user hits enter.
     if (event.key == "Enter") {
         if (checkWord()) {
             $(".highlighted").removeClass("highlighted");
-            indexForTypedLetters = 0;
-            enteredWord = [];
         }
-    // If backspace of delete, check if deleted letter is the last occurrence of that letter in the guessed word.
-    // If so, remove 'highlighted' class from corresponding letter.
-    } else if (event.keyCode === 8) { // for backspace key
-        var deletedLetter = t.value[t.selectionStart - 1].toUpperCase();
-        if (deletedLetter == enteredWord.pop()) {
-            var targetedLetter = document.getElementById('letters-container').children.item(indexForTypedLetters - 1);
-            $(targetedLetter).removeClass("highlighted");
-            indexForTypedLetters--;
-        }
-    } else if (event.keyCode === 46) { // for delete key
-        var deletedLetter = t.value[t.selectionStart - 1].toUpperCase();
-        if (deletedLetter == enteredWord.pop()) {
-            var targetedLetter = document.getElementById('letters-container').children.item(indexForTypedLetters - 1);
-            $(targetedLetter).removeClass("highlighted");
-            indexForTypedLetters--;
-        }
-    // If typed letter matches one of the mandatory letters, add 'highlighted' class to corresponding div.
-    } else if (letters[indexForTypedLetters] == event.key.toUpperCase()) {
-        var targetedLetter = document.getElementById('letters-container').children.item(indexForTypedLetters);
-        $(targetedLetter).addClass("highlighted");
-        indexForTypedLetters++;
-        enteredWord.push(event.key.toUpperCase());
-        /*
-        if ($("div.letter:contains('" + event.key.toUpperCase() + "')").closest(".letter").hasClass("highlighted")) {
-            console.log("inside second conditional")
-            $("div.letter:contains('" + event.key.toUpperCase() + "')").addClass("highlighted");
-        }
-        */
-    // Test to ensure that user only inputs english letters, and that action keys (tab, shift, etc.) are disregarded.
-    } else if (/[a-z]/.test(event.key) && event.key.length === 1) {
-        enteredWord.push(event.key.toLowerCase());
     }
-    return /[a-z]/.test(event.key)
+    return false
+})
+
+/*
+* Prevent using arrow keys to move cursor
+*/
+$("#guess-input").keydown(function(event){
+    if (event.keyCode == 37 || event.keyCode == 38 || event.keyCode == 39 || event.keyCode == 40) {
+        event.preventDefault();
+    }
 });
+
+/*
+* Prevent clicking to move cursor
+*/
+$("#guess-input").mousedown(function(event) {
+    $(this).focus();
+    const inputValueLength = $(this).val().length;
+    $(this)[0].selectionStart = inputValueLength;
+    return false
+})
 
 $(function() {
     $("#guess-input").focus();
 });
 
-loadGameInfo(0.3);
+loadGameInfo(1);
 
 console.log(JSON.parse(localStorage.getItem('solutions')));
 console.log("Goal score: " + getGoalScore())

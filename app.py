@@ -68,23 +68,29 @@ def index():
     print(query)
 
     # bypass database for testing
-    #letters, solution = generate(used, 3)
+    letters, solution = generate(used, 3)
+    solution_list = [s for s in solution.keys() if solution[s] != 0]
+
+    '''
     if query:
         letters = query[0].letters
         print(letters)
-        solution = get_solutions(letters)
+        solution_list = get_solutions_list(letters)
     else:
         letters, solution = generate(used, 3)
+        solution_list = list(solution.keys())
         db_letters = ''.join(letters)
         db_entry = LetterSets(letters=db_letters,
                               date=today)
         db.session.add(db_entry)
         db.session.commit()
+    '''
 
     # generate a suitable letter triple and pass that triple as well as the solution set to the front end
     # and render the homepage
     letters_upper = [x.upper() for x in letters]
-    return render_template('index.html', results=[letters_upper, solution])
+    print(solution_list)
+    return render_template('index.html', results=[letters_upper, solution_list, solution])
 
 if __name__ == '__main__':
     app.run(debug=True)

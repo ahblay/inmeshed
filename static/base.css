@@ -123,3 +123,11 @@ tr:first-child:hover {
 .normal-link {
     color: #ffda6a;
 }
+
+.unselectable {
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
