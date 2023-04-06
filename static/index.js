@@ -217,7 +217,7 @@ function setLetters() {
 * Assigns thresholds to steps in the progress bar.
 */
 function assignThresholds() {
-    var best = getGoalScore();
+    var best = getGoalScore() - 1;
     const percentages = [0, 0.06, 0.14, 0.25, 0.38, 0.55, 0.78, 1];
     $("#progress-bar li").each(function(idx, li) {
         $(li).attr("data-threshold", Math.round(best * percentages[idx]));
@@ -226,12 +226,17 @@ function assignThresholds() {
 
 function updateProgressBar(score) {
     var current = $("#progress-bar li.active");
+    var changedLevel = false;
     while (current.next().data("threshold") < score) {
         current.removeClass("active");
         current = current.next();
+        changedLevel = true;
     }
     current.addClass("active");
     current.attr("data-before", score);
+    if (changedLevel && score >= getGoalScore()) {
+        addConfetti("#progress-guess-container");
+    }
     return
 }
 
@@ -290,11 +295,11 @@ function checkWord() {
         handleAnimation(results[0], results[1]);
         guesses.push(guess);
         setGuesses(guesses);
+        $("#uncommon-words").empty();
+        renderUncommonWords();
         // clear #found-words
         $("#found-words").empty();
         renderGuesses();
-        $("#uncommon-words").empty();
-        renderUncommonWords();
         updateScore(guess);
         $("#guess-input").val('');
         return true
@@ -363,6 +368,7 @@ function renderGuesses() {
     var enumeratedSolutions = getEnumeratedSolutions();
     var merged = mergeLabels(guesses, enumeratedSolutions);
     var wordLengthCounter = 0;
+    var allWordsFound = true;
     for (i = 0; i < merged.length; i++) {
         if (typeof merged[i] == "string") {
             var guess = $('<span />').attr('class', 'guess').html(merged[i][0].toUpperCase() + merged[i].substring(1));
@@ -378,11 +384,21 @@ function renderGuesses() {
             }
             while (wordLengthCounter < totalQuantity) {
                 $("#found-words").append($('<span />').attr('class', 'guess').html('&nbsp'));
+                allWordsFound = false;
                 wordLengthCounter++;
             }
             var info = $('<span />').attr('class', 'info').html(guessedWords + '/' + totalQuantity + " of length " + wordLength);
             $("#found-words").append(info);
             wordLengthCounter = 0;
+        }
+    }
+    if (allWordsFound) {
+        if ($("#uncommon-words").hasClass("bg-confetti-animated")) {
+            if ($("#progress-guess-container").hasClass("bg-confetti-animated")) {
+                removeConfetti("#uncommon-words");
+                removeConfetti("#progress-guess-container");
+                addConfetti("#main-content-container");
+            }
         }
     }
     updateProgressBar(currentScore);
@@ -391,7 +407,6 @@ function renderGuesses() {
 
 function renderUncommonWords() {
     var uncommonWords = getUncommonWords();
-    console.log(uncommonWords)
     for (var i = 0; i < uncommonWords.length; i++) {
         var guess = $('<span />').attr('class', 'guess').html(uncommonWords[i].toUpperCase());
         $("#uncommon-words").append(guess);
@@ -400,6 +415,22 @@ function renderUncommonWords() {
         $("#uncommon-words").append($('<span />').attr('class', 'guess').html('&nbsp'));
         i++;
     }
+    if (uncommonWords.length == 10) {
+        addConfetti("#uncommon-words");
+    }
+}
+
+function addConfetti(selector) {
+    $(selector).addClass("bg-confetti-animated");
+    /*
+    setTimeout(function() {
+        $(selector).removeClass("bg-confetti-animated");
+    }, 5000);
+    */
+}
+
+function removeConfetti(selector) {
+    $(selector).removeClass("bg-confetti-animated");
 }
 
 /**
@@ -412,8 +443,8 @@ function loadGameInfo(difficulty = 1) {
     setGoalScore();
     assignThresholds();
     setLetters();
-    renderGuesses();
     renderUncommonWords();
+    renderGuesses();
     letterHighlighter();
     return
 }
