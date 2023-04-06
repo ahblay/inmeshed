@@ -69,10 +69,10 @@ def index():
     print(query)
 
     # bypass database for testing
-    # letters, solution = generate(used, 3)
-    # solution_list = [s for s in solution.keys() if solution[s] != 0]
+    letters, solution = generate(used, 3)
+    common_solution_list = [s for s in solution.keys() if solution[s] != 0]
 
-    if query:
+    '''if query:
         letters = query[0].letters
         print(letters)
         common_solution_list = get_common_solutions_list(letters)
@@ -85,7 +85,7 @@ def index():
         db_entry = LetterSets(letters=db_letters,
                               date=today)
         db.session.add(db_entry)
-        db.session.commit()
+        db.session.commit()'''
 
     # generate a suitable letter triple and pass that triple as well as the solution set to the front end
     # and render the homepage

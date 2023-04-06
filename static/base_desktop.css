@@ -176,6 +176,25 @@ input:focus {
     overflow: scroll;
 }
 
+#uncommon-words {
+    display: flex;
+    flex-flow: column wrap;
+    align-content: flex-start;
+    height: calc(35vh - 20px);
+    margin-top: 50px;
+    overflow: scroll;
+}
+
+#uncommon-words .guess {
+    margin: 8px;
+    margin-right: 50px;
+    padding-bottom: 3px;
+    border-bottom: 1px solid gray;
+    font-size: 18px;
+    min-width: 120px;
+    color: #f7d65c;
+}
+
 #found-words .guess {
     margin: 8px;
     margin-right: 50px;

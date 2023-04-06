@@ -1,32 +1,45 @@
 /**
-* Calculates the point value of a word based on its length.
+* Calculates the point value of a word based on its frequency.
 */
 function calculateWordScore(word) {
+    var solutionsFreq = getSolutionsFrequencies();
+    var wordFreq = solutionsFreq[word];
     var score = 0;
-    if (word.length == 3) {
-        score += 1;
-    } else if (word.length == 4) {
-        score += 2;
-    } else if (word.length == 5) {
-        score += 3;
-    } else if (word.length == 6) {
-        score += 4;
-    } else if (word.length == 7) {
-        score += 4;
-    } else if (word.length == 8) {
-        score += 3;
-    } else if (word.length == 9) {
-        score += 2;
-    } else if (word.length >= 10) {
-        score += 1;
+    var message = '';
+    var uncommon = false;
+    if (wordFreq > 0) {
+        if (wordFreq > 100) {
+            score = 1;
+            message = "Wow!"
+        } else if (wordFreq > 50) {
+            score = 2;
+            message = "Amazing job!"
+        }  else if (wordFreq > 25) {
+            score = 3;
+            message = "You're a QUEEN."
+        } else if (wordFreq > 10) {
+            score = 4;
+            message = "You must watch a lot of TV."
+        } else if (wordFreq > 2) {
+            score = 5;
+            message = "Yup yup yup."
+        } else {
+            score = 6;
+            message = "Go Giants!"
+        }
+    } else {
+        score = 3;
+        message = "Uncommon! (On TV.)"
+        uncommon = true;
     }
-    return score
+    return [score, message, uncommon]
 }
 
 /**
 * Resets variables 'guesses' and 'currentScore' in session storage.
 */
 function resetLocalStorageData() {
+    setUncommonWords([]);
     setGuesses([]);
     setCurrentScore(0);
 }
@@ -68,6 +81,22 @@ function setSolutions() {
 function getSolutions() {
     var solutions = JSON.parse(localStorage.getItem('solutions'));
     return solutions
+}
+
+function setUncommonWords(uncommonWords) {
+    localStorage.setItem('uncommonWords', JSON.stringify(uncommonWords));
+    return
+}
+
+function getUncommonWords() {
+    var uncommonWords = JSON.parse(localStorage.getItem('uncommonWords'));
+    if (uncommonWords) {
+        return uncommonWords
+    } else {
+        var uncommonWords = [];
+        localStorage.setItem('uncommonWords', JSON.stringify(uncommonWords));
+        return uncommonWords
+    }
 }
 
 /**
@@ -138,8 +167,14 @@ function getCurrentScore() {
 /**
 * Sets session storage value for 'goalScore'.
 */
-function setGoalScore(enumeratedSolutions) {
-    score = Object.values(enumeratedSolutions).reduce((a, b) => a + b, 0);
+function setGoalScore() {
+    var solutions = getSolutions();
+    var score = 0;
+    for (var i = 0; i < solutions.length; i++) {
+        var results = calculateWordScore(solutions[i]);
+        score += results[0];
+    }
+    // score = Object.values(enumeratedSolutions).reduce((a, b) => a + b, 0);
     localStorage.setItem('goalScore', JSON.stringify(score));
 }
 
@@ -183,10 +218,9 @@ function setLetters() {
 */
 function assignThresholds() {
     var best = getGoalScore();
-    var percentage = 0;
+    const percentages = [0, 0.06, 0.14, 0.25, 0.38, 0.55, 0.78, 1];
     $("#progress-bar li").each(function(idx, li) {
-        $(li).attr("data-threshold", Math.round(best * percentage));
-        percentage += 0.142857;
+        $(li).attr("data-threshold", Math.round(best * percentages[idx]));
     })
 }
 
@@ -202,6 +236,7 @@ function updateProgressBar(score) {
 }
 
 function updateScore(guess) {
+    /*
     var guesses = getGuesses();
     var enumeratedGuesses = enumerateByLength(guesses);
     var enumeratedSolutions = getEnumeratedSolutions();
@@ -213,16 +248,27 @@ function updateScore(guess) {
         updateProgressBar(currentScore);
     }
     console.log(currentScore);
+    */
+
+    var currentScore = getCurrentScore();
+    var results = calculateWordScore(guess);
+    currentScore += results[0];
+    setCurrentScore(currentScore);
+    updateProgressBar(currentScore);
+
+    console.log(currentScore);
     return
 }
 
-function handleAnimation() {
+function handleAnimation(score, message) {
+    $("#points").html("+" + score);
+    $("#points-message").html(message);
     $("#points-bug").css("visibility", "visible");
     $("#points-bug").addClass("animation");
     setTimeout(function() {
         $("#points-bug").removeClass("animation");
         $("#points-bug").css("visibility", "hidden");
-    }, 1000);
+    }, 1200);
 }
 
 /**
@@ -235,12 +281,20 @@ function checkWord() {
     var solutionsFreq = getSolutionsFrequencies();
     var guesses = getGuesses();
     if (guess in solutionsFreq && !(guesses.includes(guess))) {
-        handleAnimation();
+        var results = calculateWordScore(guess);
+        if (results[2]) {
+            var uncommonWords = getUncommonWords();
+            uncommonWords.push(guess);
+            setUncommonWords(uncommonWords);
+        }
+        handleAnimation(results[0], results[1]);
         guesses.push(guess);
         setGuesses(guesses);
         // clear #found-words
         $("#found-words").empty();
         renderGuesses();
+        $("#uncommon-words").empty();
+        renderUncommonWords();
         updateScore(guess);
         $("#guess-input").val('');
         return true
@@ -306,11 +360,8 @@ function renderGuesses() {
     var currentScore = getCurrentScore();
     var guesses = getGuesses();
     var enumeratedGuesses = enumerateByLength(guesses);
-    console.log(enumeratedGuesses)
     var enumeratedSolutions = getEnumeratedSolutions();
-    console.log(enumeratedSolutions)
     var merged = mergeLabels(guesses, enumeratedSolutions);
-    console.log(merged)
     var wordLengthCounter = 0;
     for (i = 0; i < merged.length; i++) {
         if (typeof merged[i] == "string") {
@@ -338,6 +389,19 @@ function renderGuesses() {
     return
 }
 
+function renderUncommonWords() {
+    var uncommonWords = getUncommonWords();
+    console.log(uncommonWords)
+    for (var i = 0; i < uncommonWords.length; i++) {
+        var guess = $('<span />').attr('class', 'guess').html(uncommonWords[i].toUpperCase());
+        $("#uncommon-words").append(guess);
+    }
+    while (i < 10) {
+        $("#uncommon-words").append($('<span />').attr('class', 'guess').html('&nbsp'));
+        i++;
+    }
+}
+
 /**
 * Loads data from server into session storage.
 */
@@ -345,10 +409,11 @@ function loadGameInfo(difficulty = 1) {
     setSolutions();
     setSolutionsFrequencies();
     setEnumeratedSolutions(difficulty);
-    setGoalScore(getEnumeratedSolutions());
+    setGoalScore();
     assignThresholds();
     setLetters();
     renderGuesses();
+    renderUncommonWords();
     letterHighlighter();
     return
 }
