@@ -1,5 +1,5 @@
 import random, string
-from flask import Flask, render_template
+from flask import Flask, render_template, request
 from resources import *
 from datetime import datetime
 import os
@@ -54,6 +54,18 @@ class LetterSets(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     letters = db.Column(db.String(16))
     date = db.Column(db.Date)
+
+
+@app.route("/missing_words", methods=["POST"])
+def log_missing_words():
+    if request.method == 'POST':
+        word = request.form.get("word")
+        print(word)
+        if word:
+            with open("missing_words.txt", "a") as f:
+                f.write(word)
+                f.write("\n")
+    return {"success": True}
 
 
 @app.route("/", methods=["GET"])

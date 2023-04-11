@@ -33,11 +33,18 @@ InMESHED
              oncut="return false;"
       >
     </div>
+
     <div id="letters-container" class="desc grid-container">
       {% for letter in results[0] %}
       <div class="letter">{{ letter }}</div>
       {% endfor %}
     </div>
+
+    <div id="button-container">
+      <button title="Tell me if a word is missing. Word list does not include endings (i.e. 'ing', 'ed', 'er')."
+              onclick="logMissingWord()">Log Missing Word</button>
+    </div>
+
     <ul id="uncommon-words"></ul>
     <!--
     <button onclick="checkWord()">Enter</button>
@@ -60,6 +67,59 @@ InMESHED
     </div>
   </div>
 </div>
+
+<div id="score-modal" class="modal">
+  <div class="modal-content">
+    <span class="close">&times;</span>
+    <h2>Ranking</h2>
+    <div class="desc">
+      Your ranking is based on your intelligence.
+    </div>
+    <div id="ranking-container" class="desc">
+      <div id="ranking-eight" class="row">
+        <span class="level">Genius</span>
+        <span class="line"></span>
+        <span class="threshold"></span>
+      </div>
+      <div id="ranking-seven" class="row">
+        <span class="level">Clever</span>
+        <span class="line"></span>
+        <span class="threshold"></span>
+      </div>
+      <div id="ranking-six" class="row">
+        <span class="level">Good</span>
+        <span class="line"></span>
+        <span class="threshold"></span>
+      </div>
+      <div id="ranking-five" class="row">
+        <span class="level">"Clever"</span>
+        <span class="line"></span>
+        <span class="threshold"></span>
+      </div>
+      <div id="ranking-four" class="row">
+        <span class="level">Eh...</span>
+        <span class="line"></span>
+        <span class="threshold"></span>
+      </div>
+      <div id="ranking-three" class="row">
+        <span class="level">Moron</span>
+        <span class="line"></span>
+        <span class="threshold"></span>
+      </div>
+      <div id="ranking-two" class="row">
+        <span class="level">Idiot</span>
+        <span class="line"></span>
+        <span class="threshold"></span>
+      </div>
+      <div id="ranking-one" class="row">
+        <span class="level current-ranking">Fool</span>
+        <span class="line current-ranking"></span>
+        <span class="threshold current-ranking"></span>
+      </div>
+    </div>
+
+  </div>
+</div>
 {% endblock %}
 
 {% block scripts %}
@@ -70,4 +130,5 @@ InMESHED
   var solutionsFreq = {{ results[2]|tojson }}
 </script>
 <script src="/static/index.js" type="text/javascript"></script>
+<script src="/static/popup.js" type="text/javascript"></script>
 {% endblock %}

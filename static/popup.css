@@ -1,0 +1,88 @@
+/* The Modal (background) */
+.modal {
+  display: none; /* Hidden by default */
+  position: fixed; /* Stay in place */
+  z-index: 1; /* Sit on top */
+  padding-top: 100px; /* Location of the box */
+  left: 0;
+  top: 0;
+  width: 100%; /* Full width */
+  height: 100%; /* Full height */
+  overflow: auto; /* Enable scroll if needed */
+  background-color: rgb(0,0,0); /* Fallback color */
+  background-color: rgba(0,0,0,0.7); /* Black w/ opacity */
+}
+
+/* Modal Content */
+.modal-content {
+  margin: 70px auto;
+  padding: 10px 16px;
+  background: #fff;
+  border-radius: 5px;
+  border: 1px solid #ffda6a;
+  width: 40%;
+  position: relative;
+  background-color: #1b2125;
+}
+
+.modal-content h2 {
+  margin: 10px;
+  color: #ffda6a;
+  font-family: 'Playfair Display', Serif;
+}
+
+.modal-content .desc {
+    margin: 10px;
+}
+
+/* The Close Button */
+.close {
+  color: white;
+  float: right;
+  font-size: 20px;
+}
+
+.close:hover,
+.close:focus {
+  color: gray;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+#progress-bar:hover {
+    cursor: pointer;
+}
+
+#ranking-container {
+    margin: 60px 30px;
+}
+
+#ranking-container .row {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: 1fr 5fr 1fr;
+    margin: 15px;
+}
+
+.row .line {
+    margin: 8px;
+    margin-right: 50px;
+    padding-bottom: 3px;
+    border-bottom: 1px solid gray;
+    font-size: 18px;
+    min-width: 95%;
+    text-align: center;
+}
+
+.row .level {
+    text-align: right;
+}
+
+.row .threshold {
+    text-align: left;
+}
+
+.current-ranking {
+    border-color: #ffda6a !important;
+    color: #ffda6a;
+}

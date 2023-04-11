@@ -59,8 +59,29 @@ def handle_wiki_freq_list(filename):
     # remove all words that do not appear in unix dictionary
     complete = complete[complete['word'].isin(intersection)]'''
 
-    complete.to_csv('tv_scrabble_unix', sep='\t')
+    complete.to_csv('output', sep='\t')
 
     return
 
-handle_wiki_freq_list('tv_freq_list_dirty.txt')
+def get_words_from_oed(filename):
+    df = pd.read_csv(filename, sep='\t', header=0)
+    df['word'] = df['word'].apply(lambda x: x.split(' ')[0].lower())
+    print(df.head)
+
+    # clean scrabble wordlist
+    complete = pd.read_csv('tv_freq_list', sep='\t', header=0)
+
+    # get intersection of scrabble and frequency wordlists
+    intersection = intersect_word_lists(complete['word'], df['word'])
+
+    # remove all words that do not appear in scrabble dictionary
+    complete = complete[complete['word'].isin(intersection)]
+
+    del complete[complete.columns[0]]
+    print(complete.head())
+
+    complete.to_csv('output', sep='\t')
+    return
+
+#handle_wiki_freq_list('tv_freq_list_dirty.txt')
+get_words_from_oed('oed.txt')

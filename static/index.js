@@ -224,15 +224,25 @@ function assignThresholds() {
     })
 }
 
+function addHighlightLevel(level) {
+    $("#ranking-" + level).children().addClass("current-ranking");
+}
+
+function removeHighlightLevel(level) {
+    $("#ranking-" + level).children().removeClass("current-ranking");
+}
+
 function updateProgressBar(score) {
     var current = $("#progress-bar li.active");
     var changedLevel = false;
     while (current.next().data("threshold") < score) {
         current.removeClass("active");
+        removeHighlightLevel(current.attr("id"));
         current = current.next();
         changedLevel = true;
     }
     current.addClass("active");
+    addHighlightLevel(current.attr("id"));
     current.attr("data-before", score);
     if (changedLevel && score >= getGoalScore()) {
         addConfetti("#progress-guess-container");
@@ -415,7 +425,7 @@ function renderUncommonWords() {
         $("#uncommon-words").append($('<span />').attr('class', 'guess').html('&nbsp'));
         i++;
     }
-    if (uncommonWords.length == 10) {
+    if (uncommonWords.length >= 10 && !($("#uncommon-words").hasClass("bg-confetti-animated"))) {
         addConfetti("#uncommon-words");
     }
 }
@@ -433,6 +443,26 @@ function removeConfetti(selector) {
     $(selector).removeClass("bg-confetti-animated");
 }
 
+function assignThresholdsToModal() {
+    var one = $("#one").data("threshold");
+    var two = $("#two").data("threshold");
+    var three = $("#three").data("threshold");
+    var four = $("#four").data("threshold");
+    var five = $("#five").data("threshold");
+    var six = $("#six").data("threshold");
+    var seven = $("#seven").data("threshold");
+    var eight = $("#eight").data("threshold");
+    $("#ranking-one .threshold").text(one + 1);
+    $("#ranking-two .threshold").text(two + 1);
+    $("#ranking-three .threshold").text(three + 1);
+    $("#ranking-four .threshold").text(four + 1);
+    $("#ranking-five .threshold").text(five + 1);
+    $("#ranking-six .threshold").text(six + 1);
+    $("#ranking-seven .threshold").text(seven + 1);
+    $("#ranking-eight .threshold").text(eight + 1);
+}
+
+
 /**
 * Loads data from server into session storage.
 */
@@ -442,6 +472,7 @@ function loadGameInfo(difficulty = 1) {
     setEnumeratedSolutions(difficulty);
     setGoalScore();
     assignThresholds();
+    assignThresholdsToModal();
     setLetters();
     renderUncommonWords();
     renderGuesses();
@@ -483,6 +514,14 @@ function handleWordSubmission(event) {
     if (checkWord()) {
         $(".highlighted").removeClass("highlighted");
     }
+}
+
+function logMissingWord() {
+    var word = $("#guess-input").val().toLowerCase();
+    $.post("/missing_words", {"word": word});
+    $("#guess-input").val("");
+    $(".highlighted").removeClass("highlighted");
+    $("#guess-input").focus();
 }
 
 $("#guess-input").keyup(function(event) {

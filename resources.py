@@ -34,7 +34,7 @@ def get_solutions(letters):
 
 def get_solutions_df(letters):
     letters = ''.join(letters)
-    df = pd.read_csv('tv_freq_list', sep='\t', header=0)
+    df = pd.read_csv('oed_no_endings', sep='\t', header=0)
     df = df.drop('amount', 1)
     solutions = df[df['word'].apply(lambda x: is_subsequence(letters, x))]
     return solutions
@@ -42,7 +42,7 @@ def get_solutions_df(letters):
 
 def get_common_solutions_list(letters):
     letters = ''.join(letters)
-    df = pd.read_csv('tv_freq_list', sep='\t', header=0)
+    df = pd.read_csv('oed_no_endings', sep='\t', header=0)
     df = df.drop('amount', 1)
     solutions = df[df['word'].apply(lambda x: is_subsequence(letters, x))]
     solutions = pd.Series(solutions['count'].values, index=solutions['word']).to_dict()
