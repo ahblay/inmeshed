@@ -19,7 +19,7 @@
   padding: 10px 16px;
   background: #fff;
   border-radius: 5px;
-  border: 1px solid #ffda6a;
+  /*border: 1px solid #ffda6a;*/
   width: 40%;
   position: relative;
   background-color: #1b2125;
@@ -54,7 +54,7 @@
 }
 
 #ranking-container {
-    margin: 60px 30px;
+    margin: 30px 0px;
 }
 
 #ranking-container .row {

@@ -4,14 +4,26 @@
 {% endblock %}
 
 {% block title %}
-InMESHED
+inMEsHed
 {% endblock %}
 
 {% block stylesheets %}
 <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.2/katex.min.css">
 {% endblock %}
 
-{% block ptitle %}InMeshed{% endblock %}
+{% block navbar %}
+<div class="icons-left">
+  <i class="material-symbols-outlined">menu</i>
+</div>
+<div class="title">
+  inMEsHed
+</div>
+<div class="icons-right">
+  <i id="info-icon" class="material-symbols-outlined">help</i>
+  <i class="material-symbols-outlined">bar_chart</i>
+  <i class="material-symbols-outlined">settings</i>
+</div>
+{% endblock %}
 
 {% block content %}
 <div id="main-content-container" class="big-grid-container">
@@ -68,12 +80,30 @@ InMESHED
   </div>
 </div>
 
+<div id="info-modal" class="modal">
+  <div class="modal-content">
+    <span class="close">&times;</span>
+    <h2>How To Play</h2>
+    <div class="desc">
+      Find all the words that contain the listed letters in the order that they appear. For example, if the letters
+      are R, G and L, a solution would be wRanGLe. Note that the letters must appear in the correct order (e.g. LaRGe is
+      not a solution).
+      <br><br>
+      The word list used in inMEsHed only contains root words. Any derivative words that can be formed by altering
+      endings (i.e. adding -ing, -er, -ed, -s, etc.) are excluded from the game dictionary. It is possible that some
+      such words may have espaced my scrutiny; I am very sorry about this. If you feel that your word should be in the
+      word list and it is not, you can click log missing word and I will add it. (If you abuse this, I will remove it,
+      so please don't type something that is obviously not a word, like "scrumplethorpe".)
+    </div>
+  </div>
+</div>
+
 <div id="score-modal" class="modal">
   <div class="modal-content">
     <span class="close">&times;</span>
     <h2>Ranking</h2>
     <div class="desc">
-      Your ranking is based on your intelligence.
+      Your ranking is based on your intelligence. It is also based on a percentage of the words that you find.
     </div>
     <div id="ranking-container" class="desc">
       <div id="ranking-eight" class="row">
@@ -117,7 +147,6 @@ InMESHED
         <span class="threshold current-ranking"></span>
       </div>
     </div>
-
   </div>
 </div>
 {% endblock %}

@@ -8,10 +8,7 @@ body {
 }
 
 header {
-    margin-top: 35px;
     margin-bottom: 50px;
-    margin-left: 14%;
-    margin-right: 14%;
     text-align: center;
 }
 
@@ -26,6 +23,12 @@ footer {
 main {
     margin-left: 14%;
     margin-right: 14%;
+}
+
+.navbar {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: 1fr 7fr 1fr;
 }
 
 .yellow {
