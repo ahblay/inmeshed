@@ -5,6 +5,9 @@ from datetime import datetime
 import os
 from flask_sqlalchemy import SQLAlchemy
 from dotenv import load_dotenv
+import openai
+import json
+from random import sample
 import pandas as pd
 
 # BASIC FUNCTIONALITY
@@ -45,6 +48,7 @@ app.config["SQLALCHEMY_POOL_RECYCLE"] = 299
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 db = SQLAlchemy(app)
+openai.api_key = os.environ.get("openai_api_key")
 
 
 class LetterSets(db.Model):
@@ -66,6 +70,48 @@ def log_missing_words():
                 f.write(word)
                 f.write("\n")
     return {"success": True}
+
+
+@app.route("/get_emojis", methods=["GET", "POST"])
+def get_emojis():
+    if request.method == 'GET':
+        guesses = json.loads(request.args.get("guesses"))
+        quantity = 6
+        print(guesses)
+        if len(guesses) >= quantity:
+            words_to_convert = ', '.join(sample(guesses, quantity))
+            message = f"Generate emoji strings for the words in this list: {words_to_convert}. " \
+                      f"Each emoji string should consist of at most two emoji that accurately represent a word. " \
+                      f"Please use appropriate and relevant emoji. Return a dictionary with exactly {quantity} entries, " \
+                      f"where key=emoji string and value=word, and no other text."
+            # handle ChatGPT emoji conversion via API
+            response = openai.ChatCompletion.create(
+                model="gpt-3.5-turbo",
+                messages=[
+                    {
+                        "role": "system",
+                        "content": "You only provide responses to a given request and no other text. "
+                                   "You follow instructions exactly as given. Under NO CIRCUMSTANCES should you return "
+                                   "a result that is not in the format of a python dictionary."
+                    },
+                    {"role": "user", "content": message}
+                ]
+            )
+            emojis = response['choices'][0]['message']['content']
+            print(emojis)
+            try:
+                result = json.loads(emojis)
+                success = True
+            except:
+                success = False
+                result = "Something went wrong with ChatGPT. This happens because AI isn't in the scary phase yet."
+
+            print(result)
+        else:
+            result = "Insufficient words to generate emojis."
+            success = False
+            print(result)
+    return {"success": success, "result": result}
 
 
 @app.route("/", methods=["GET"])

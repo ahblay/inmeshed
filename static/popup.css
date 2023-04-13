@@ -86,3 +86,10 @@
     border-color: #ffda6a !important;
     color: #ffda6a;
 }
+
+.divider {
+    height: 0px;
+    width: 93%;
+    border-top: 1px solid gray;
+    margin: 10px;
+}

@@ -19,7 +19,7 @@ def intersect_word_lists(a, b):
 def handle_wiki_freq_list(filename):
     # read data into pandas
     df = pd.read_csv(filename, sep='\t', header=0)
-    df = df.drop('rank', 1)
+    df = df.drop(labels='rank', axis=1)
 
     # get rid of rows that contain NaN or None
     df = df.dropna(thresh=2)

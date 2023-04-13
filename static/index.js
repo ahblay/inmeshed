@@ -306,7 +306,7 @@ function checkWord() {
         guesses.push(guess);
         setGuesses(guesses);
         $("#uncommon-words").empty();
-        renderUncommonWords();
+        renderUncommonWords(6);
         // clear #found-words
         $("#found-words").empty();
         renderGuesses();
@@ -415,17 +415,17 @@ function renderGuesses() {
     return
 }
 
-function renderUncommonWords() {
+function renderUncommonWords(goal) {
     var uncommonWords = getUncommonWords();
     for (var i = 0; i < uncommonWords.length; i++) {
         var guess = $('<span />').attr('class', 'guess').html(uncommonWords[i].toUpperCase());
         $("#uncommon-words").append(guess);
     }
-    while (i < 10) {
+    while (i < goal) {
         $("#uncommon-words").append($('<span />').attr('class', 'guess').html('&nbsp'));
         i++;
     }
-    if (uncommonWords.length >= 10 && !($("#uncommon-words").hasClass("bg-confetti-animated"))) {
+    if (uncommonWords.length >= goal && !($("#uncommon-words").hasClass("bg-confetti-animated"))) {
         addConfetti("#uncommon-words");
     }
 }
@@ -474,7 +474,7 @@ function loadGameInfo(difficulty = 1) {
     assignThresholds();
     assignThresholdsToModal();
     setLetters();
-    renderUncommonWords();
+    renderUncommonWords(6);
     renderGuesses();
     letterHighlighter();
     return
@@ -522,6 +522,24 @@ function logMissingWord() {
     $("#guess-input").val("");
     $(".highlighted").removeClass("highlighted");
     $("#guess-input").focus();
+}
+
+function getEmojis() {
+    var guesses = getGuesses();
+    $("#emoji-loading-icon").css("display", "inline-block");
+    $.get("/get_emojis", {"guesses": JSON.stringify(guesses)}).done(function(data) {
+        $("#emoji-loading-icon").css("display", "none");
+        if (data["success"]) {
+            var emojis = data["result"];
+            for (const [key, value] of Object.entries(emojis)) {
+                console.log(key, value);
+                $("#emojis").append($('<div />').attr('class', 'emoji').html(key + " : " + value));
+            }
+        }
+        else {
+            $("#emojis").append($('<div />').attr('class', 'desc').html(data["result"]));
+        }
+    });
 }
 
 $("#guess-input").keyup(function(event) {

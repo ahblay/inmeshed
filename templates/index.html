@@ -20,8 +20,8 @@ inMEsHed
 </div>
 <div class="icons-right">
   <i id="info-icon" class="material-symbols-outlined">help</i>
-  <i class="material-symbols-outlined">bar_chart</i>
-  <i class="material-symbols-outlined">settings</i>
+  <i id="stats-icon" class="material-symbols-outlined">bar_chart</i>
+  <i id="settings-icon" class="material-symbols-outlined">settings</i>
 </div>
 {% endblock %}
 
@@ -77,6 +77,25 @@ inMEsHed
     </ul>
     <ul id="found-words"></ul>
     </div>
+  </div>
+</div>
+
+<div id="stats-modal" class="modal">
+  <div class="modal-content">
+    <span class="close">&times;</span>
+    <h2>Statistics</h2>
+    <div class="divider"></div>
+    <div class="desc">
+      <button onclick="getEmojis()">Share</button>
+      <div id="emoji-loading-icon" class="lds-ellipsis">
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+      </div>
+    </div>
+    <div class="divider"></div>
+    <div id="emojis" class="desc"></div>
   </div>
 </div>
 

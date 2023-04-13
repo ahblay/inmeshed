@@ -206,7 +206,7 @@ input:focus {
     display: flex;
     flex-flow: column wrap;
     align-content: flex-start;
-    height: calc(35vh - 20px);
+    height: calc(20vh - 20px);
     margin-top: 50px;
     overflow: scroll;
 }
