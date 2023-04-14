@@ -86,13 +86,12 @@ inMEsHed
     <h2>Statistics</h2>
     <div class="divider"></div>
     <div class="desc">
-      <button onclick="getEmojis()">Share</button>
-      <div id="emoji-loading-icon" class="lds-ellipsis">
-        <div></div>
-        <div></div>
-        <div></div>
-        <div></div>
-      </div>
+      <button class="yellow-button" onclick="getEmojis()">Generate Emojis</button>
+      <span id="emoji-loading-icon" class="loader">
+        <span class="loader-box"></span>
+        <span class="loader-box"></span>
+        <span class="loader-box"></span>
+      </span>
     </div>
     <div class="divider"></div>
     <div id="emojis" class="desc"></div>
@@ -110,9 +109,21 @@ inMEsHed
       <br><br>
       The word list used in inMEsHed only contains root words. Any derivative words that can be formed by altering
       endings (i.e. adding -ing, -er, -ed, -s, etc.) are excluded from the game dictionary. It is possible that some
-      such words may have espaced my scrutiny; I am very sorry about this. If you feel that your word should be in the
-      word list and it is not, you can click log missing word and I will add it. (If you abuse this, I will remove it,
+      such words may have escaped my scrutiny; I am very sorry about this. If you feel that your word should be in the
+      word list and it is not, you can click "log missing word" and I will add it. (If you abuse this, I will remove it,
       so please don't type something that is obviously not a word, like "scrumplethorpe".)
+    </div>
+  </div>
+</div>
+
+<div id="i-told-you-so-modal" class="modal">
+  <div class="modal-content">
+    <span class="close">&times;</span>
+    <h2>You Never Listen</h2>
+    <div class="desc">
+      You can't just follow the rules, can you? You had to toe the line. "Where's the limit?" you asked yourself.
+      "How far can I push it?" I didn't want to do this. I thought things were going well. The words you found! The
+      progress you made! Alas.
     </div>
   </div>
 </div>

@@ -76,13 +76,13 @@ def log_missing_words():
 def get_emojis():
     if request.method == 'GET':
         guesses = json.loads(request.args.get("guesses"))
-        quantity = 6
+        quantity = json.loads(request.args.get("quantity"))
         print(guesses)
         if len(guesses) >= quantity:
             words_to_convert = ', '.join(sample(guesses, quantity))
             message = f"Generate emoji strings for the words in this list: {words_to_convert}. " \
                       f"Each emoji string should consist of at most two emoji that accurately represent a word. " \
-                      f"Please use appropriate and relevant emoji. Return a dictionary with exactly {quantity} entries, " \
+                      f"Please use appropriate and relevant emoji. Return a JSON dictionary with exactly {quantity} entries, " \
                       f"where key=emoji string and value=word, and no other text."
             # handle ChatGPT emoji conversion via API
             response = openai.ChatCompletion.create(
@@ -92,7 +92,7 @@ def get_emojis():
                         "role": "system",
                         "content": "You only provide responses to a given request and no other text. "
                                    "You follow instructions exactly as given. Under NO CIRCUMSTANCES should you return "
-                                   "a result that is not in the format of a python dictionary."
+                                   "a result that is not in the format of a JSON object."
                     },
                     {"role": "user", "content": message}
                 ]

@@ -93,3 +93,22 @@
     border-top: 1px solid gray;
     margin: 10px;
 }
+
+.emoji-container {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: 5fr 1fr 5fr;
+}
+
+.yellow-button {
+    border: 1px solid #ffda6a;
+    padding: 8px;
+    border-radius: 3px;
+    background-color: #1b2125;
+    color: #ffda6a;
+}
+
+.yellow-button:hover {
+    cursor: pointer;
+    background-color: black;
+}

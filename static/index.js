@@ -40,6 +40,7 @@ function calculateWordScore(word) {
 */
 function resetLocalStorageData() {
     setUncommonWords([]);
+    setEmojiDict({});
     setGuesses([]);
     setCurrentScore(0);
 }
@@ -96,6 +97,24 @@ function getUncommonWords() {
         var uncommonWords = [];
         localStorage.setItem('uncommonWords', JSON.stringify(uncommonWords));
         return uncommonWords
+    }
+}
+
+function setEmojiDict(emojiDict) {
+    localStorage.setItem('emojiDict', JSON.stringify(emojiDict));
+    return
+}
+
+function getEmojiDict() {
+    console.log("In getEmojis() call...")
+    var emojiDict = JSON.parse(localStorage.getItem('emojiDict'));
+    console.log(emojiDict)
+    if (emojiDict) {
+        return emojiDict
+    } else {
+        var emojiDict = {};
+        localStorage.setItem('emojiDict', JSON.stringify(emojiDict));
+        return emojiDict
     }
 }
 
@@ -518,28 +537,85 @@ function handleWordSubmission(event) {
 
 function logMissingWord() {
     var word = $("#guess-input").val().toLowerCase();
+    if (word == "scrumplethorpe") {
+        resetLocalStorageData();
+        $("#progress-bar li.active").removeClass("active");
+        $("#one").addClass("active");
+        $("#emojis").empty();
+        $("#found-words").empty();
+        renderGuesses();
+        $("#i-told-you-so-modal").css("display", "block");
+        $("#guess-input").val("");
+        $(".highlighted").removeClass("highlighted");
+        return
+    }
     $.post("/missing_words", {"word": word});
     $("#guess-input").val("");
     $(".highlighted").removeClass("highlighted");
     $("#guess-input").focus();
 }
 
+function findLevel() {
+    const id = $("#progress-bar > .active").attr("id");
+    console.log(id)
+    const referenceDict = {
+        "one": 1,
+        "two": 2,
+        "three": 3,
+        "four": 4,
+        "five": 5,
+        "six": 6,
+        "seven": 7,
+        "eight": 8
+    }
+    return referenceDict[id]
+}
+
 function getEmojis() {
-    var guesses = getGuesses();
-    $("#emoji-loading-icon").css("display", "inline-block");
-    $.get("/get_emojis", {"guesses": JSON.stringify(guesses)}).done(function(data) {
-        $("#emoji-loading-icon").css("display", "none");
-        if (data["success"]) {
-            var emojis = data["result"];
-            for (const [key, value] of Object.entries(emojis)) {
-                console.log(key, value);
-                $("#emojis").append($('<div />').attr('class', 'emoji').html(key + " : " + value));
+    const guesses = getGuesses();
+    const emojiDict = getEmojiDict();
+    const level = findLevel();
+    var quantity;
+    if (level < 3) {
+        quantity = 0;
+    } else {
+        quantity = level - 2;
+    }
+    $("#emojis").empty();
+    if (quantity == 0) {
+        const message = "Insufficient words to generate emojis. You must reach level 3."
+        $("#emojis").append($('<div />').attr('class', 'desc').html(message));
+        return
+    } else if (Object.keys(emojiDict).length == quantity) {
+        for (const [key, value] of Object.entries(emojiDict)) {
+            const emojiContainer = $('<div />').attr('class', 'emoji-container');
+            emojiContainer.append($('<span />').css('text-align', 'right').html(key));
+            emojiContainer.append($('<span />').css('text-align', 'center').html(" : "));
+            emojiContainer.append($('<span />').css('text-align', 'left').html(value));
+            $("#emojis").append(emojiContainer);
+        }
+        return
+    } else {
+        $("#emoji-loading-icon").css("display", "initial");
+        const data = {"guesses": JSON.stringify(guesses), "quantity": quantity};
+        $.get("/get_emojis", data).done(function(data) {
+            $("#emoji-loading-icon").css("display", "none");
+            if (data["success"]) {
+                var emojis = data["result"];
+                for (const [key, value] of Object.entries(emojis)) {
+                    const emojiContainer = $('<div />').attr('class', 'emoji-container');
+                    emojiContainer.append($('<span />').css('text-align', 'right').html(key));
+                    emojiContainer.append($('<span />').css('text-align', 'center').html(" : "));
+                    emojiContainer.append($('<span />').css('text-align', 'left').html(value));
+                    $("#emojis").append(emojiContainer);
+                }
+                setEmojiDict(emojis);
             }
-        }
-        else {
-            $("#emojis").append($('<div />').attr('class', 'desc').html(data["result"]));
-        }
-    });
+            else {
+                $("#emojis").append($('<div />').attr('class', 'desc').html(data["result"]));
+            }
+        });
+    }
 }
 
 $("#guess-input").keyup(function(event) {
