@@ -41,6 +41,7 @@ function calculateWordScore(word) {
 function resetLocalStorageData() {
     setUncommonWords([]);
     setEmojiDict({});
+    resetAllEmojis();
     setGuesses([]);
     setCurrentScore(0);
 }
@@ -229,6 +230,43 @@ function setLetters() {
         resetLocalStorageData();
     }
     localStorage.setItem('letters', JSON.stringify(letters));
+    return
+}
+
+function getAllEmojis() {
+    var allEmojis = JSON.parse(localStorage.getItem('allEmojis'));
+    if (allEmojis != null) {
+        return allEmojis
+    } else {
+        allEmojis = null;
+        localStorage.setItem('allEmojis', JSON.stringify(allEmojis));
+        return allEmojis
+    }
+}
+
+function setAllEmojis() {
+    var allEmojis = getAllEmojis();
+    if (allEmojis != null) {
+        return
+    } else {
+        var solutions = getSolutions();
+        console.log(solutions)
+        console.log(solutions.length)
+        var data = {"guesses": JSON.stringify(solutions), "quantity": solutions.length};
+        $.get("/get_emojis", data).done(function(results) {
+            console.log(results)
+            if (results["success"]) {
+                localStorage.setItem('allEmojis', JSON.stringify(results["result"]));
+            } else {
+                localStorage.setItem('allEmojis', JSON.stringify(null));
+            }
+        });
+    }
+    return
+}
+
+function resetAllEmojis() {
+    localStorage.setItem('allEmojis', JSON.stringify(null));
     return
 }
 
@@ -493,8 +531,10 @@ function loadGameInfo(difficulty = 1) {
     assignThresholds();
     assignThresholdsToModal();
     setLetters();
+
     renderUncommonWords(6);
     renderGuesses();
+    setAllEmojis();
     letterHighlighter();
     return
 }
@@ -652,6 +692,31 @@ $(function() {
 });
 
 loadGameInfo(1);
+
+/*
+$(".guess").click(function() {
+    console.log($(this).text())
+    if ($(this).text() == String.fromCharCode(160)) {
+        var solutions = sortGuesses(getSolutions());
+        var enumeratedSolutions = getEnumeratedSolutions();
+        var merged = mergeLabels(solutions, enumeratedSolutions);
+        const spanIdx = $("#found-words > span").index(this);
+
+        console.log(merged)
+        console.log(spanIdx)
+        console.log(merged[spanIdx])
+
+        const data = {"guesses": JSON.stringify(merged[spanIdx]), "quantity": 1};
+        $.get("/get_emojis", data).done(function(data) {
+            $(this).empty();
+            $(this).html(data["result"]);
+            console.log(data["result"])
+        });
+    } else {
+        return;
+    }
+})
+*/
 
 console.log(JSON.parse(localStorage.getItem('solutions')));
 console.log("Goal score: " + getGoalScore())

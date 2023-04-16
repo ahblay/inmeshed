@@ -111,6 +111,9 @@ def get_emojis():
             result = "Insufficient words to generate emojis."
             success = False
             print(result)
+    else:
+        success = False
+        result = {}
     return {"success": success, "result": result}
 
 
