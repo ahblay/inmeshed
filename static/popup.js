@@ -6,6 +6,10 @@ $("#stats-icon").click(function() {
     $("#stats-modal").css("display", "block");
 });
 
+$("#settings-icon").click(function() {
+    $("#settings-modal").css("display", "block");
+});
+
 $("#info-icon").click(function() {
     $("#info-modal").css("display", "block");
 });

@@ -112,3 +112,19 @@
     cursor: pointer;
     background-color: black;
 }
+
+#hints-loading-message {
+    display: none;
+}
+
+#hints-used-message {
+    display: none;
+}
+
+#hint-1 {
+    display: none;
+}
+
+#hint-2 {
+    display: none;
+}

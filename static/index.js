@@ -35,6 +35,13 @@ function calculateWordScore(word) {
     return [score, message, uncommon]
 }
 
+function objectFlip(obj) {
+    return Object.keys(obj).reduce((ret, key) => {
+        ret[obj[key]] = key;
+        return ret;
+    }, {});
+}
+
 /**
 * Resets variables 'guesses' and 'currentScore' in session storage.
 */
@@ -44,6 +51,7 @@ function resetLocalStorageData() {
     resetAllEmojis();
     setGuesses([]);
     setCurrentScore(0);
+    setHintStatus(0);
 }
 
 function sortGuesses(guesses) {
@@ -207,6 +215,27 @@ function getGoalScore() {
 }
 
 /**
+* Sets session storage value for 'hintStatus'.
+*/
+function setHintStatus(hintStatus) {
+    localStorage.setItem('hintStatus', JSON.stringify(hintStatus));
+}
+
+/**
+* Retrieves session storage value for 'hintStatus'.
+*/
+function getHintStatus() {
+    var hintStatus = JSON.parse(localStorage.getItem('hintStatus'));
+    if (hintStatus != null) {
+        return parseInt(hintStatus)
+    } else {
+        var hintStatus = 0;
+        localStorage.setItem('hintStatus', JSON.stringify(hintStatus));
+        return hintStatus
+    }
+}
+
+/**
 * Retrieves session storage value for 'letters'.
 */
 function getLetters() {
@@ -246,17 +275,31 @@ function getAllEmojis() {
 
 function setAllEmojis() {
     var allEmojis = getAllEmojis();
+    const hint = getHintStatus();
     if (allEmojis != null) {
+        if (hint = 0) {
+            $("#hint-1").css("display", "inline-block");
+        } else if (hint = 1) {
+            $("#hint-2").css("display", "inline-block");
+        } else {
+            $("#hints-used-message").css("display", "inline-block");
+        }
         return
     } else {
+        $("#hints-loading-message").css("display", "inline-block");
+        $("#all-emojis-loading-icon").css("display", "initial");
         var solutions = getSolutions();
         console.log(solutions)
         console.log(solutions.length)
         var data = {"guesses": JSON.stringify(solutions), "quantity": solutions.length};
         $.get("/get_emojis", data).done(function(results) {
+            $("#all-emojis-loading-icon").css("display", "none");
+            $("#hints-loading-message").css("display", "none");
+            $("#hint-1").css("display", "inline-block");
             console.log(results)
             if (results["success"]) {
-                localStorage.setItem('allEmojis', JSON.stringify(results["result"]));
+                allEmojis = objectFlip(results["result"]);
+                localStorage.setItem('allEmojis', JSON.stringify(allEmojis));
             } else {
                 localStorage.setItem('allEmojis', JSON.stringify(null));
             }
@@ -425,21 +468,41 @@ function mergeLabels(sortedList, dict) {
     return result
 }
 
+function buildGuessDiv(word, emoji) {
+    word = word[0].toUpperCase() + word.substring(1);
+    const guessEmoji = $('<span />').attr('class', 'guess-emoji').html(emoji);
+    const guess = $('<span />').attr('class', 'guess').html(word);
+    const guessEmojiContainer = $('<div />').attr('class', 'guess-emoji-container');
+    guessEmojiContainer.append(guess);
+    guessEmojiContainer.append(guessEmoji);
+    $("#found-words").append(guessEmojiContainer);
+    return
+}
+
 /**
 * Adds all previously guessed words to the guesses pane on the website.
 */
+/*
 function renderGuesses() {
+    var solutions = sortGuesses(getSolutions());
+    var allEmojis = getAllEmojis();
     var currentScore = getCurrentScore();
     var guesses = getGuesses();
     var enumeratedGuesses = enumerateByLength(guesses);
     var enumeratedSolutions = getEnumeratedSolutions();
+    console.log(enumeratedSolutions)
     var merged = mergeLabels(guesses, enumeratedSolutions);
     var wordLengthCounter = 0;
     var allWordsFound = true;
     for (i = 0; i < merged.length; i++) {
         if (typeof merged[i] == "string") {
-            var guess = $('<span />').attr('class', 'guess').html(merged[i][0].toUpperCase() + merged[i].substring(1));
-            $("#found-words").append(guess);
+            solutions = solutions.filter(e => e !== merged[i]);
+            guess = merged[i][0].toUpperCase() + merged[i].substring(1);
+            if (allEmojis != null) {
+                buildGuessDiv(guess, allEmojis[merged[i]]);
+            } else {
+                buildGuessDiv(guess, '&nbsp');
+            }
             wordLengthCounter++;
         } else {
             var wordLength = merged[i][0];
@@ -449,10 +512,18 @@ function renderGuesses() {
             } else {
                 var guessedWords = 0;
             }
+            var solutionsByLength = solutions.filter(e => e.length == wordLength);
+            var solutionsIdxCounter = 0;
             while (wordLengthCounter < totalQuantity) {
-                $("#found-words").append($('<span />').attr('class', 'guess').html('&nbsp'));
+                if (allEmojis != null) {
+                    emoji = allEmojis[solutionsByLength[solutionsIdxCounter]];
+                    buildGuessDiv('&nbsp', emoji);
+                } else {
+                    buildGuessDiv('&nbsp', '&nbsp');
+                }
                 allWordsFound = false;
                 wordLengthCounter++;
+                solutionsIdxCounter++;
             }
             var info = $('<span />').attr('class', 'info').html(guessedWords + '/' + totalQuantity + " of length " + wordLength);
             $("#found-words").append(info);
@@ -468,6 +539,97 @@ function renderGuesses() {
             }
         }
     }
+    updateProgressBar(currentScore);
+    return
+}
+*/
+
+function generateRenderedGuesses(guesses, solutions) {
+    var guessesDict = {};
+    for (var i = 0; i < guesses.length; i++) {
+        solutions = solutions.filter(e => e !== guesses[i]);
+        var found = [guesses[i], "guess"];
+        if (guessesDict.hasOwnProperty(found[0].length)) {
+            guessesDict[found[0].length].push(found);
+        } else {
+            var listByLength = [found];
+            guessesDict[found[0].length] = listByLength;
+        }
+    }
+    for (var i = 0; i < solutions.length; i++) {
+        var missing = [solutions[i], "solution"];
+        if (guessesDict.hasOwnProperty(missing[0].length)) {
+            guessesDict[missing[0].length].push(missing);
+        } else {
+            var listByLength = [missing];
+            guessesDict[missing[0].length] = listByLength;
+        }
+    }
+    return guessesDict;
+}
+
+function renderGuesses() {
+    // generate a dict with the following format:
+    // renderedGuesses = {length (int): [word1, word2, ..., wordn]}
+    var guesses = getGuesses();
+    var solutions = sortGuesses(getSolutions());
+    var renderedGuesses = generateRenderedGuesses(guesses, solutions);
+    console.log(renderedGuesses)
+
+    var enumeratedSolutions = getEnumeratedSolutions();
+    var currentScore = getCurrentScore();
+
+    var allEmojis = getAllEmojis();
+    const hintStatus = getHintStatus();
+    // add new guess to renderedGuesses
+
+    const lengths = Object.keys(renderedGuesses);
+    lengths.forEach((wordLength) => {
+        var guessesByLength = renderedGuesses[wordLength];
+        for (var i = 0; i < guessesByLength.length; i++) {
+            var guess = guessesByLength[i][0];
+            var guessType = guessesByLength[i][1];
+            if (guessType == 'guess') {
+                if (allEmojis != null && hintStatus > 0 && allEmojis.hasOwnProperty(guess)) {
+                    if (hintStatus == 2) {
+                        var emoji = allEmojis[guess];
+                    } else {
+                        var emoji = allEmojis[guess].substring(0, hintStatus + 1);
+                    }
+                    // adjacent emoji hint
+                    // buildGuessDiv(guess, emoji);
+                    buildGuessDiv(guess, '&nbsp');
+
+                } else {
+                    buildGuessDiv(guess, '&nbsp');
+                }
+            } else {
+                if (allEmojis != null && hintStatus > 0 && allEmojis.hasOwnProperty(guess)) {
+                    if (hintStatus == 2) {
+                        var emoji = allEmojis[guess];
+                    } else {
+                        var emoji = allEmojis[guess].substring(0, hintStatus + 1);
+                    }
+                    // adjacent emoji hint
+                    // buildGuessDiv('&nbsp', emoji);
+                    buildGuessDiv(emoji, '&nbsp');
+                } else {
+                    // adjacent emoji hint
+                    // buildGuessDiv('&nbsp', '&nbsp');
+                    buildGuessDiv('&nbsp', '&nbsp');
+                }
+            }
+        }
+        var nonEmptyGuesses = guessesByLength.filter(e => e[1] == 'guess');
+        if (typeof enumeratedSolutions[wordLength] === "undefined") {
+            var totalQuantity = 0;
+        } else {
+            var totalQuantity = enumeratedSolutions[wordLength];
+        }
+        var info = $('<span />').attr('class', 'info').html(nonEmptyGuesses.length + '/' + totalQuantity + " of length " + wordLength);
+        $("#found-words").append(info);
+    });
+
     updateProgressBar(currentScore);
     return
 }
@@ -689,6 +851,22 @@ $("#guess-input").mousedown(function(event) {
 
 $(function() {
     $("#guess-input").focus();
+});
+
+$("#hint-1").click(function() {
+   $(this).css("display", "none");
+   $("#hint-2").css("display", "inline-block");
+   setHintStatus(1);
+   $("#found-words").empty();
+   renderGuesses();
+});
+
+$("#hint-2").click(function() {
+   $(this).css("display", "none");
+   $("#hints-used-message").css("display", "inline-block");
+   setHintStatus(2);
+   $("#found-words").empty();
+   renderGuesses();
 });
 
 loadGameInfo(1);

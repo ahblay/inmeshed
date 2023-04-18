@@ -221,9 +221,24 @@ input:focus {
     color: #f7d65c;
 }
 
-#found-words .guess {
+.guess-emoji-container {
+    display: flex;
+}
+
+.guess-emoji {
+    /*
+    adjacent emoji hint
+    min-width: 3em;
+    margin-right: 15px;
+    padding-left: 4px;
+    */
+    text-align: left;
+    padding-top: 8px;
+}
+
+#found-words .guess-emoji-container .guess {
     margin: 8px;
-    margin-right: 50px;
+    margin-right: 8px;
     padding-bottom: 3px;
     border-bottom: 1px solid gray;
     font-size: 18px;

@@ -3,7 +3,7 @@ import string
 import pandas as pd
 
 
-def get_letters(used, n=3):
+def get_letters(used, n):
     while True:
         letters = random.choices(string.ascii_lowercase, k=n)
         if letters not in used:
@@ -50,9 +50,10 @@ def get_common_solutions_list(letters):
     return common_solution_list
 
 
-def generate(used, n=3):
+def generate(used, n=(3)):
+    choice = random.choice(n)
     while True:
-        l = get_letters(used, n)
+        l = get_letters(used, choice)
         sol = get_solutions_df(l)
         if 7 < len(sol[sol['count'] != 0]) < 50:
             break

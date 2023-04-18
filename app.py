@@ -81,8 +81,9 @@ def get_emojis():
         if len(guesses) >= quantity:
             words_to_convert = ', '.join(sample(guesses, quantity))
             message = f"Generate emoji strings for the words in this list: {words_to_convert}. " \
-                      f"Each emoji string should consist of at most two emoji that accurately represent a word. " \
-                      f"Please use appropriate and relevant emoji. Return a JSON dictionary with exactly {quantity} entries, " \
+                      f"Each emoji string should consist of AT MOST two emoji that accurately represent a word. " \
+                      f"Please only use appropriate and relevant emoji. " \
+                      f"Return a JSON dictionary with exactly {quantity} entries, " \
                       f"where key=emoji string and value=word, and no other text."
             # handle ChatGPT emoji conversion via API
             response = openai.ChatCompletion.create(
@@ -91,7 +92,9 @@ def get_emojis():
                     {
                         "role": "system",
                         "content": "You only provide responses to a given request and no other text. "
-                                   "You follow instructions exactly as given. Under NO CIRCUMSTANCES should you return "
+                                   "You follow instructions exactly as given. You strive to ensure broad compatibility "
+                                   "with commonly used devices and operating systems. "
+                                   "Under NO CIRCUMSTANCES should you return "
                                    "a result that is not in the format of a JSON object."
                     },
                     {"role": "user", "content": message}
@@ -130,7 +133,7 @@ def index():
     print(query)
 
     # bypass database for testing
-    letters, solution = generate(used, 3)
+    letters, solution = generate(used, [3, 4])
     common_solution_list = [s for s in solution.keys() if solution[s] != 0]
 
     '''if query:
