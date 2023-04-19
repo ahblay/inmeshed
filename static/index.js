@@ -115,9 +115,7 @@ function setEmojiDict(emojiDict) {
 }
 
 function getEmojiDict() {
-    console.log("In getEmojis() call...")
     var emojiDict = JSON.parse(localStorage.getItem('emojiDict'));
-    console.log(emojiDict)
     if (emojiDict) {
         return emojiDict
     } else {
@@ -277,9 +275,9 @@ function setAllEmojis() {
     var allEmojis = getAllEmojis();
     const hint = getHintStatus();
     if (allEmojis != null) {
-        if (hint = 0) {
+        if (hint == 0) {
             $("#hint-1").css("display", "inline-block");
-        } else if (hint = 1) {
+        } else if (hint == 1) {
             $("#hint-2").css("display", "inline-block");
         } else {
             $("#hints-used-message").css("display", "inline-block");
@@ -295,13 +293,14 @@ function setAllEmojis() {
         $.get("/get_emojis", data).done(function(results) {
             $("#all-emojis-loading-icon").css("display", "none");
             $("#hints-loading-message").css("display", "none");
-            $("#hint-1").css("display", "inline-block");
             console.log(results)
             if (results["success"]) {
                 allEmojis = objectFlip(results["result"]);
                 localStorage.setItem('allEmojis', JSON.stringify(allEmojis));
+                $("#hint-1").css("display", "inline-block");
             } else {
                 localStorage.setItem('allEmojis', JSON.stringify(null));
+                $("#hint-gpt-error-message").css("display", "inline-block").html(results["result"] + " Try refreshing.");
             }
         });
     }

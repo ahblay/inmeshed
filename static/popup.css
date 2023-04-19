@@ -121,6 +121,10 @@
     display: none;
 }
 
+#hint-gpt-error-message {
+    display: none;
+}
+
 #hint-1 {
     display: none;
 }

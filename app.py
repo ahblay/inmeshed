@@ -143,7 +143,7 @@ def index():
         solution_df = get_solutions_df(letters)
         solution = pd.Series(solution_df['count'].values, index=solution_df['word']).to_dict()
     else:
-        letters, solution = generate(used, 3)
+        letters, solution = generate(used, [3, 4])
         common_solution_list = [s for s in solution.keys() if solution[s] != 0]
         db_letters = ''.join(letters)
         db_entry = LetterSets(letters=db_letters,
