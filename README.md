@@ -1,6 +1,6 @@
 # InMeshed
 
-This project is a web app for a word game called "InMeshed." Each day, users are presented with a sequence of letters (e.g. [A, G, L]) and tasked with finding all words that contain these letters in order (e.g. wrAnGLe). User progress is tracked with a progress bar, and missing words are shown by length. The website is live at [url to be determined upon deployment]. 
+This project is a web app for a word game called "InMeshed." Each day, users are presented with a sequence of letters (e.g. [A, G, L]) and tasked with finding all words that contain these letters in order (e.g. wrAnGLe). User progress is tracked with a progress bar, and missing words are shown by length. The website is live at http://inmeshed.pythonanywhere.com/. 
 
 ## Description
 
