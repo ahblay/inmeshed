@@ -93,6 +93,100 @@ function getSolutions() {
     return solutions
 }
 
+/**
+* Loads in game id from server and saves to session storage.
+*/
+function setGameId() {
+    localStorage.setItem('gameId', JSON.stringify(id));
+    return
+}
+
+/**
+* Retrieves session storage value for 'gameId'.
+*/
+function getGameId() {
+    var gameId = JSON.parse(localStorage.getItem('gameId'));
+    return gameId
+}
+
+function setDateIdDict(date, id) {
+    var dateIdDict = JSON.parse(localStorage.getItem('dateIdDict'));
+    if (dateIdDict) {
+        dateIdDict[date] = id;
+        localStorage.setItem('dateIdDict', JSON.stringify(dateIdDict));
+    } else {
+        var dateIdDict = {};
+        dateIdDict[date] = id;
+        localStorage.setItem('dateIdDict', JSON.stringify(dateIdDict));
+    }
+    return
+}
+
+function getDateIdDict() {
+    var dateIdDict = JSON.parse(localStorage.getItem('dateIdDict'));
+    return dateIdDict
+}
+
+/**
+* Loads in game id from server and saves to session storage.
+*/
+function setTodayDate() {
+    localStorage.setItem('todayDate', JSON.stringify(today));
+    return
+}
+
+/**
+* Retrieves session storage value for 'gameId'.
+*/
+function getTodayDate() {
+    var today = JSON.parse(localStorage.getItem('todayDate'));
+    return today
+}
+
+/**
+* Saves daily stats data to session storage.
+*/
+function setDailyStats(stats) {
+    localStorage.setItem('dailyStats', JSON.stringify(stats));
+    return
+}
+
+/**
+* Retrieves session storage value for 'dailyStats'.
+*/
+function getDailyStats() {
+    var stats = JSON.parse(localStorage.getItem('dailyStats'));
+    if (stats) {
+        return stats
+    } else {
+        var stats = {};
+        localStorage.setItem('dailyStats', JSON.stringify(stats));
+        return stats
+    }
+}
+
+function initializeDailyStats(id) {
+    var stats = getDailyStats();
+    if (!stats.hasOwnProperty(id)) {
+        var content = {
+            'uncommon': [],
+            'no-hint': [],
+            'one-hint': [],
+            'two-hint': []
+        }
+        stats[id] = content;
+        stats[id]['bestScore'] = 0;
+        stats[id]['goalScore'] = getGoalScore();
+
+        const level = $("#progress-bar > .active").attr("id");
+        const levelName = $("#ranking-" + level + " .level").html();
+        stats[id]['levelName'] = levelName;
+
+        setDailyStats(stats);
+    }
+    return
+}
+
 function setUncommonWords(uncommonWords) {
     localStorage.setItem('uncommonWords', JSON.stringify(uncommonWords));
     return
@@ -191,7 +285,7 @@ function getCurrentScore() {
 }
 
 /**
-* Sets session storage value for 'goalScore'.
+* Sets session storage value for 'goalScore'. Also saves goal score for the current day in the daily stats dict
 */
 function setGoalScore() {
     var solutions = getSolutions();
@@ -202,6 +296,10 @@ function setGoalScore() {
     }
     // score = Object.values(enumeratedSolutions).reduce((a, b) => a + b, 0);
     localStorage.setItem('goalScore', JSON.stringify(score));
+    var stats = getDailyStats();
+    var id = getGameId();
+    stats[id]['goalScore'] = score;
+    setDailyStats(stats);
 }
 
 /**
@@ -370,6 +468,15 @@ function updateScore(guess) {
     setCurrentScore(currentScore);
     updateProgressBar(currentScore);
 
+    var stats = getDailyStats();
+    const id = getGameId();
+    stats[id]['bestScore'] = currentScore;
+
+    const level = $("#progress-bar > .active").attr("id");
+    const levelName = $("#ranking-" + level + " .level").html();
+    stats[id]['levelName'] = levelName;
+
+    setDailyStats(stats);
     console.log(currentScore);
     return
 }
@@ -383,6 +490,42 @@ function handleAnimation(score, message) {
         $("#points-bug").removeClass("animation");
         $("#points-bug").css("visibility", "hidden");
     }, 1200);
+}
+
+// TODO: add this function into the checkWord() flow
+// level: (uncommon, -1), (no-hint, 0), (one-hint, 1), (two-hint, 2)
+function updateDailyStats(word, level, score) {
+    var stats = getDailyStats();
+    const id = getGameId();
+    var info = [word, score];
+    if (level == -1) {
+        var levelKey = 'uncommon';
+    } else if (level == 0) {
+        var levelKey = 'no-hint';
+    } else if (level == 1) {
+        var levelKey = 'one-hint';
+    } else if (level == 2) {
+        var levelKey = 'two-hint';
+    } else {
+        return
+    }
+    if (stats.hasOwnProperty(id)) {
+        // add information under gameID
+        stats[id][levelKey].push(info);
+    } else {
+        // add key and stats info
+        // stats[id] =
+        var content = {
+            'uncommon': [],
+            'no-hint': [],
+            'one-hint': [],
+            'two-hint': []
+        }
+        content[levelKey].push(info);
+        stats[id] = content;
+    }
+    setDailyStats(stats);
+    return
 }
 
 /**
@@ -400,7 +543,12 @@ function checkWord() {
             var uncommonWords = getUncommonWords();
             uncommonWords.push(guess);
             setUncommonWords(uncommonWords);
+            updateDailyStats(guess, -1, results[0]);
+        } else {
+            const hint = getHintStatus();
+            updateDailyStats(guess, hint, results[0]);
         }
+
         handleAnimation(results[0], results[1]);
         guesses.push(guess);
         setGuesses(guesses);
@@ -650,11 +798,11 @@ function renderUncommonWords(goal) {
 
 function addConfetti(selector) {
     $(selector).addClass("bg-confetti-animated");
-    /*
+
     setTimeout(function() {
         $(selector).removeClass("bg-confetti-animated");
     }, 5000);
-    */
+
 }
 
 function removeConfetti(selector) {
@@ -670,7 +818,7 @@ function assignThresholdsToModal() {
     var six = $("#six").data("threshold");
     var seven = $("#seven").data("threshold");
     var eight = $("#eight").data("threshold");
-    $("#ranking-one .threshold").text(one + 1);
+    $("#ranking-one .threshold").text(one);
     $("#ranking-two .threshold").text(two + 1);
     $("#ranking-three .threshold").text(three + 1);
     $("#ranking-four .threshold").text(four + 1);
@@ -685,6 +833,10 @@ function assignThresholdsToModal() {
 * Loads data from server into session storage.
 */
 function loadGameInfo(difficulty = 1) {
+    setTodayDate();
+    setGameId();
+    setDateIdDict(getTodayDate(), getGameId());
+    initializeDailyStats(getGameId());
     setSolutions();
     setSolutionsFrequencies();
     setEnumeratedSolutions(difficulty);
@@ -736,18 +888,37 @@ function handleWordSubmission(event) {
     }
 }
 
+function deleteDailyProgress() {
+    resetLocalStorageData();
+    $(".current-ranking").removeClass("current-ranking");
+    $("#progress-bar li.active").removeClass("active");
+    $("#one").addClass("active");
+    addHighlightLevel("one");
+    $("#emojis").empty();
+    $("#found-words").empty();
+    renderGuesses();
+    $("#i-told-you-so-modal").css("display", "block");
+    $("#guess-input").val("");
+    $(".highlighted").removeClass("highlighted");
+    var stats = getDailyStats();
+    const id = getGameId();
+    delete stats[id];
+    setDailyStats(stats);
+    initializeDailyStats(id);
+    removeConfetti("#uncommon-words");
+    removeConfetti("#progress-guess-container");
+    $("#uncommon-words").empty();
+    renderUncommonWords(6);
+
+    $("#hint-1").css("display", "inline-block");
+    $("#hint-2").css("display", "none");
+    $("#hints-used-message").css("display", "none");
+}
+
 function logMissingWord() {
     var word = $("#guess-input").val().toLowerCase();
     if (word == "scrumplethorpe") {
-        resetLocalStorageData();
-        $("#progress-bar li.active").removeClass("active");
-        $("#one").addClass("active");
-        $("#emojis").empty();
-        $("#found-words").empty();
-        renderGuesses();
-        $("#i-told-you-so-modal").css("display", "block");
-        $("#guess-input").val("");
-        $(".highlighted").removeClass("highlighted");
+        deleteDailyProgress();
         return
     }
     $.post("/missing_words", {"word": word});
@@ -758,7 +929,6 @@ function logMissingWord() {
 
 function findLevel() {
     const id = $("#progress-bar > .active").attr("id");
-    console.log(id)
     const referenceDict = {
         "one": 1,
         "two": 2,
@@ -770,6 +940,27 @@ function findLevel() {
         "eight": 8
     }
     return referenceDict[id]
+}
+
+function buildShareableEmojis(emojiDict) {
+    const letters = getLetters().join(' ');
+    const lettersDiv = $('<div />').attr('class', 'shareable-content').html(letters);
+    $("#emojis").append(lettersDiv);
+    for (const [key, value] of Object.entries(emojiDict)) {
+        const tooltipText = value;
+        const shareableDiv = $('<div />').attr("data-text", tooltipText).html(key);
+        $(shareableDiv).addClass('shareable-content');
+        $(shareableDiv).addClass('tooltip left');
+        $("#emojis").append(shareableDiv);
+        /*
+        const emojiContainer = $('<div />').attr('class', 'emoji-container');
+        emojiContainer.append($('<span />').css('text-align', 'right').html(key));
+        emojiContainer.append($('<span />').css('text-align', 'center').html(" : "));
+        emojiContainer.append($('<span />').css('text-align', 'left').html(value));
+        $("#emojis").append(emojiContainer);
+        */
+    }
+    return
 }
 
 function getEmojis() {
@@ -788,13 +979,7 @@ function getEmojis() {
         $("#emojis").append($('<div />').attr('class', 'desc').html(message));
         return
     } else if (Object.keys(emojiDict).length == quantity) {
-        for (const [key, value] of Object.entries(emojiDict)) {
-            const emojiContainer = $('<div />').attr('class', 'emoji-container');
-            emojiContainer.append($('<span />').css('text-align', 'right').html(key));
-            emojiContainer.append($('<span />').css('text-align', 'center').html(" : "));
-            emojiContainer.append($('<span />').css('text-align', 'left').html(value));
-            $("#emojis").append(emojiContainer);
-        }
+        buildShareableEmojis(emojiDict);
         return
     } else {
         $("#emoji-loading-icon").css("display", "initial");
@@ -803,13 +988,7 @@ function getEmojis() {
             $("#emoji-loading-icon").css("display", "none");
             if (data["success"]) {
                 var emojis = data["result"];
-                for (const [key, value] of Object.entries(emojis)) {
-                    const emojiContainer = $('<div />').attr('class', 'emoji-container');
-                    emojiContainer.append($('<span />').css('text-align', 'right').html(key));
-                    emojiContainer.append($('<span />').css('text-align', 'center').html(" : "));
-                    emojiContainer.append($('<span />').css('text-align', 'left').html(value));
-                    $("#emojis").append(emojiContainer);
-                }
+                buildShareableEmojis(emojis);
                 setEmojiDict(emojis);
             }
             else {
@@ -869,31 +1048,6 @@ $("#hint-2").click(function() {
 });
 
 loadGameInfo(1);
-
-/*
-$(".guess").click(function() {
-    console.log($(this).text())
-    if ($(this).text() == String.fromCharCode(160)) {
-        var solutions = sortGuesses(getSolutions());
-        var enumeratedSolutions = getEnumeratedSolutions();
-        var merged = mergeLabels(solutions, enumeratedSolutions);
-        const spanIdx = $("#found-words > span").index(this);
-
-        console.log(merged)
-        console.log(spanIdx)
-        console.log(merged[spanIdx])
-
-        const data = {"guesses": JSON.stringify(merged[spanIdx]), "quantity": 1};
-        $.get("/get_emojis", data).done(function(data) {
-            $(this).empty();
-            $(this).html(data["result"]);
-            console.log(data["result"])
-        });
-    } else {
-        return;
-    }
-})
-*/
 
 console.log(JSON.parse(localStorage.getItem('solutions')));
 console.log("Goal score: " + getGoalScore())

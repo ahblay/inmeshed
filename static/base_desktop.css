@@ -36,6 +36,17 @@ i:hover {
     cursor: pointer;
 }
 
+.header-link {
+    cursor: pointer;
+    Font-Family: 'Source Sans Pro', Sans-Serif;
+    font-size: 18px;
+    color: #ffda6a;
+    font-weight: bolder;
+    margin-right: 10px;
+    margin-left: 10px;
+    border-bottom: 1px solid #ffda6a;
+}
+
 .icons-left {
     text-align: left;
     padding-top: 18px;
@@ -326,4 +337,8 @@ input:focus {
 #button-container button:hover {
     cursor: pointer;
     background-color: black;
+}
+
+.shareable-content {
+    max-width: fit-content;
 }

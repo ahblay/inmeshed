@@ -55,7 +55,7 @@ def generate(used, n=(3)):
     while True:
         l = get_letters(used, choice)
         sol = get_solutions_df(l)
-        if 7 < len(sol[sol['count'] != 0]) < 50:
+        if 20 < len(sol[sol['count'] != 0]) < 70:
             break
     return l, pd.Series(sol['count'].values, index=sol['word']).to_dict()
 

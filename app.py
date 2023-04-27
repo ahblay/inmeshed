@@ -120,6 +120,29 @@ def get_emojis():
     return {"success": success, "result": result}
 
 
+@app.route("/get_game_info", methods=["GET", "POST"])
+def get_game_info():
+    if request.method == 'GET':
+        id = json.loads(request.args.get("id"))
+        query = LetterSets.query.get(id)
+        if query:
+            success = True
+            letters = query.letters
+            common_solution_list = get_common_solutions_list(letters)
+            solution_df = get_solutions_df(letters)
+            solution = pd.Series(solution_df['count'].values, index=solution_df['word']).to_dict()
+            result = {"solutions": common_solution_list, "solutionsFrequencies": solution}
+        else:
+            success = False
+            result = "Something went wrong. Please try refreshing your page."
+        print(query)
+    else:
+        success = False
+        result = "Something went wrong. Please try refreshing your page."
+    print(result)
+    return {"success": success, "result": result}
+
+
 @app.route("/", methods=["GET"])
 def index():
     # if new day, then generate a new triple and render it on the client side
@@ -133,11 +156,12 @@ def index():
     print(query)
 
     # bypass database for testing
-    letters, solution = generate(used, [3, 4])
-    common_solution_list = [s for s in solution.keys() if solution[s] != 0]
+    #letters, solution = generate(used, [3, 4])
+    #common_solution_list = [s for s in solution.keys() if solution[s] != 0]
 
-    '''if query:
+    if query:
         letters = query[0].letters
+        id = query[0].id
         print(letters)
         common_solution_list = get_common_solutions_list(letters)
         solution_df = get_solutions_df(letters)
@@ -149,13 +173,15 @@ def index():
         db_entry = LetterSets(letters=db_letters,
                               date=today)
         db.session.add(db_entry)
-        db.session.commit()'''
+        db.session.commit()
+        id = db_entry.id
 
     # generate a suitable letter triple and pass that triple as well as the solution set to the front end
     # and render the homepage
     letters_upper = [x.upper() for x in letters]
+    print(id)
     print(common_solution_list)
-    return render_template('index.html', results=[letters_upper, common_solution_list, solution])
+    return render_template('index.html', results=[letters_upper, common_solution_list, solution, id, today])
 
 if __name__ == '__main__':
     app.run(debug=True)
